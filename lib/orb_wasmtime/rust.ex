@@ -29,6 +29,8 @@ defmodule OrbWasmtime.Rust do
 
   def add(_, _), do: error()
   def reverse_string(_), do: error()
+  
+  def strlen(_), do: error()
 
   def wasm_list_exports(_), do: error()
   def wasm_list_imports(_), do: error()
@@ -50,6 +52,7 @@ defmodule OrbWasmtime.Rust do
   def wasm_instance_cast_func_i32(_, _, _), do: error()
   def wasm_instance_write_i32(_, _, _), do: error()
   def wasm_instance_write_i64(_, _, _), do: error()
+  def wasm_instance_write_memory(_, _, _), do: error()
   def wasm_instance_write_string_nul_terminated(_, _, _), do: error()
   def wasm_instance_read_memory(_, _, _), do: error()
   def wasm_instance_read_string_nul_terminated(_, _), do: error()

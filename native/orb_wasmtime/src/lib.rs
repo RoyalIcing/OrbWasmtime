@@ -31,6 +31,11 @@ fn reverse_string(a: String) -> String {
     return a.chars().rev().collect();
 }
 
+#[nif]
+fn strlen(a: String) -> usize {
+    return a.chars().count();
+}
+
 fn string_error<T: ToString>(error: T) -> Error {
     return Error::Term(Box::new(error.to_string()));
 }
@@ -585,7 +590,7 @@ impl ImportsTable {
                         owned_env.run(|env| {
                             let func_module_name2 = "";
                             let func_name2 = "";
-                            eprintln!("Sending :reply_to_func_call_out func#{func_id} {func_module_name2} {func_name2}");
+                            // eprintln!("Sending :reply_to_func_call_out func#{func_id} {func_module_name2} {func_name2}");
                             env.send(
                                 &pid,
                                 (atom::reply_to_func_call_out(), func_id, reply, params2).encode(env),
@@ -615,10 +620,11 @@ impl ImportsTable {
                         .unwrap_or_else(|error| panic!("Did not recv reply value in time calling imported func {}.{}: {error:?}", func_module_name, func_name));
                         // .expect("Did not recv reply value in time");
 
+                    // eprintln!("Got reply {reply_binary}");
+
                     // let reply_binary2 = reply_binary
                     //     .as_ref()
                     //     .expect("Did not write back reply value 2");
-                    eprintln!("Got reply {reply_binary}");
                     // reply_binary2.to_vec()
 
                     let number = reply_binary;
@@ -876,6 +882,12 @@ impl RunningInstance {
         Ok(())
     }
 
+    fn write_memory(&mut self, memory_offset: u32, bytes: Vec<u8>) -> Result<(), anyhow::Error> {
+        let offset: usize = memory_offset.try_into().unwrap();
+        self.memory.write(&mut self.store, offset, &bytes)?;
+        Ok(())
+    }
+
     fn write_string_nul_terminated(
         &mut self,
         memory_offset: u32,
@@ -1061,12 +1073,24 @@ fn wasm_instance_write_string_nul_terminated(
 }
 
 #[nif]
+fn wasm_instance_write_memory(
+    env: Env,
+    resource: ResourceArc<RunningInstanceResource>,
+    memory_offset: u32,
+    bytes: Vec<u8>,
+) -> Result<(), Error> {
+    let mut instance = resource.lock.write().map_err(string_error)?;
+    instance
+        .write_memory(memory_offset, bytes)
+        .map_err(string_error)
+}
+
+#[nif]
 fn wasm_instance_read_memory(
     resource: ResourceArc<RunningInstanceResource>,
     start: u32,
     length: u32,
 ) -> Result<Vec<u8>, Error> {
-    eprintln!("wasm_instance_read_memory");
     // let instance = resource.lock.read().map_err(string_error)?;
     let instance = resource.lock.try_read().map_err(string_error)?;
     let result = instance.read_memory(start, length).map_err(string_error)?;
@@ -1080,7 +1104,6 @@ fn wasm_instance_read_string_nul_terminated(
     resource: ResourceArc<RunningInstanceResource>,
     memory_offset: u32,
 ) -> Result<String, Error> {
-    eprintln!("wasm_instance_read_string_nul_terminated");
     // drop(resource.lock.try_read().map_err(string_error)?);
 
     let mut instance = resource.lock.try_write().map_err(string_error)?;
@@ -1121,7 +1144,6 @@ fn wasm_caller_read_string_nul_terminated(
 
     let memory_ptr = &memory_ptr_and_size.0;
     let memory_size = memory_ptr_and_size.1;
-    eprintln!("wasm_caller_read_string_nul_terminated {memory_size}");
 
     let memory_ptr = memory_ptr.load(std::sync::atomic::Ordering::Relaxed);
     // let data = &memory.data(&store)[start..];
@@ -1132,8 +1154,6 @@ fn wasm_caller_read_string_nul_terminated(
 
     let cstr = unsafe { CStr::from_ptr(data.as_ptr()) };
     let string = String::from_utf8_lossy(cstr.to_bytes()).to_string();
-
-    eprintln!("wasm_caller_read_string_nul_terminated {string}");
 
     // let s = wasm_extract_string(&caller, &memory, vec![memory_offset])?;
 
@@ -1197,6 +1217,7 @@ rustler::init!(
     [
         add,
         reverse_string,
+        strlen,
         wasm_list_exports,
         wasm_list_imports,
         wasm_call_i32,
@@ -1215,6 +1236,7 @@ rustler::init!(
         wasm_instance_write_i32,
         wasm_instance_write_i64,
         wasm_instance_write_string_nul_terminated,
+        wasm_instance_write_memory,
         wasm_instance_read_memory,
         wasm_instance_read_string_nul_terminated,
         wasm_call_out_reply,
