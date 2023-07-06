@@ -1,0 +1,57 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+env:
+  ELIXIR_VERSION: 1.15
+  OTP_VERSION: 26
+  MIX_ENV: test
+  TOKENIZERS_BUILD: "true"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            native/orb_wasmtime/target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "${{ env.OTP_VERSION }}"
+          elixir-version: "${{ env.ELIXIR_VERSION }}"
+      - run: mix deps.get
+      - run: mix compile --warnings-as-errors
+      - run: mix test --warnings-as-errors
+  format:
+    runs-on: ubuntu-latest
+    name: mix format
+    steps:
+      - uses: actions/checkout@v3
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "${{ env.OTP_VERSION }}"
+          elixir-version: "${{ env.ELIXIR_VERSION }}"
+      - run: mix format --check-formatted
