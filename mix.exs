@@ -8,11 +8,18 @@ defmodule OrbWasmtime.MixProject do
   def project do
     [
       app: :orb_wasmtime,
+      name: "Orb Wasmtime",
+      description: "Run WebAssembly in Elixir via Wasmtime",
       version: @version,
       elixir: "~> 1.15",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      package: package()
+      package: package(),
+      docs: docs(),
+      preferred_cli_env: [
+        docs: :docs,
+        "hex.publish": :docs
+      ]
     ]
   end
 
@@ -26,10 +33,23 @@ defmodule OrbWasmtime.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ex_doc, "~> 0.28", only: :docs, runtime: false},
       {:rustler, "~> 0.29.0", optional: not @force_build?},
       {:rustler_precompiled, "~> 0.6"}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "OrbWasmtime",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      extras: [
+        "LICENSE"
+        # "notebooks/pretrained.livemd"
+      ]
     ]
   end
 

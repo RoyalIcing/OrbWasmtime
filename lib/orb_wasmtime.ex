@@ -1,6 +1,6 @@
 defmodule OrbWasmtime do
   @moduledoc """
-  Documentation for `OrbWasmtime`.
+  Execute WebAssembly via Wasmtime.
   """
 
   @doc """

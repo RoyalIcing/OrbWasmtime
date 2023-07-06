@@ -1,4 +1,8 @@
 defmodule OrbWasmtime.Instance do
+  @moduledoc """
+  Instantiate a WebAssembly module and interact with it: call functions, get/set globals, and read/write memory.
+  """
+
   alias OrbWasmtime.Wasm
   alias OrbWasmtime.Rust
 

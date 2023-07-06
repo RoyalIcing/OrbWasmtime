@@ -1,4 +1,8 @@
 defmodule OrbWasmtime.Wasm do
+  @moduledoc """
+  Take a WebAssembly module and list its exports or call a one-shot function.
+  """
+
   alias OrbWasmtime.Rust
 
   alias __MODULE__
