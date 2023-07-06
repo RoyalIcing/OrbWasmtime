@@ -44,7 +44,7 @@ defmodule OrbWasmtime.MixProject do
         "README.md"
         # "LICENSE"
       ],
-      licenses: ["MIT"],
+      licenses: ["BSD-3-Clause"],
       links: %{"GitHub" => @source_url},
       maintainers: ["Patrick Smith"]
     ]
