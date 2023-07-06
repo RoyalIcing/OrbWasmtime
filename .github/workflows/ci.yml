@@ -9,7 +9,7 @@ env:
   ELIXIR_VERSION: 1.15
   OTP_VERSION: 26
   MIX_ENV: test
-  TOKENIZERS_BUILD: "true"
+  ORB_WASMTIME_BUILD: "true"
 
 jobs:
   test:
