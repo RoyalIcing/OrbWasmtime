@@ -1,0 +1,17 @@
+[package]
+name = "orb_wasmtime"
+version = "0.1.0"
+authors = []
+edition = "2021"
+
+[lib]
+name = "orb_wasmtime"
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+rustler = "0.29.0"
+anyhow = "1.0"
+crossbeam-channel = "0.5"
+wasmtime = "10.0.1"
+wabt = "0.9.0"
