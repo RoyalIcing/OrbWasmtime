@@ -24,3 +24,6 @@ orb_wasmtime-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Rustler
+priv/native/
