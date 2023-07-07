@@ -324,7 +324,7 @@ fn wasm_extract_string(
             let data: &[i8] =
                 unsafe { slice::from_raw_parts(data.as_ptr() as *const i8, data.len()) };
 
-            let cstr = unsafe { CStr::from_ptr(data.as_ptr().into()) };
+            let cstr = unsafe { CStr::from_ptr(data.as_ptr().cast()) };
             let string = String::from_utf8_lossy(cstr.to_bytes()).to_string();
 
             return Ok(string);
@@ -1155,7 +1155,7 @@ fn wasm_caller_read_string_nul_terminated(
     let memory_offset: usize = memory_offset.try_into().unwrap();
     let data = &data[memory_offset..];
 
-    let cstr = unsafe { CStr::from_ptr(data.as_ptr().into()) };
+    let cstr = unsafe { CStr::from_ptr(data.as_ptr().cast()) };
     let string = String::from_utf8_lossy(cstr.to_bytes()).to_string();
 
     // let s = wasm_extract_string(&caller, &memory, vec![memory_offset])?;
