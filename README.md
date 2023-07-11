@@ -2,6 +2,8 @@
 
 Run WebAssembly modules in Elixir via Rust & Wasmtime.
 
+**Note: this project is in alpha and will change. For another WebAssembly runner for Elixir [check out Wasmex](https://github.com/tessi/wasmex).**
+
 ## Installation
 
 Add `orb_wasmtime` to your list of dependencies in `mix.exs`:
