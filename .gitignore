@@ -27,3 +27,4 @@ orb_wasmtime-*.tar
 
 # Rustler
 priv/native/
+/checksum-Elixir.OrbWasmtime.Rust.exs
