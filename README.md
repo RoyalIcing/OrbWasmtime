@@ -4,14 +4,38 @@ Run WebAssembly modules in Elixir via Rust & Wasmtime.
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `orb_wasmtime` to your list of dependencies in `mix.exs`:
+Add `orb_wasmtime` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
     {:orb_wasmtime, "~> 0.1.0"}
   ]
+end
+```
+
+## About
+
+OrbWasmtime lets you run a WebAssembly module and interact with it. You can call functions, list exports, pass imports, get/set globals, and read/write memory.
+
+```elixir
+defmodule Example do
+  def run() do
+    inst = Instance.run(example_wat())
+    add = Instance.capture(inst, :add, 2)
+    add.(2, 3) # 5
+    add.(4, 5) # 9
+  end
+
+  defp example_wat() do
+    """
+    (module $Add
+      (func (export "add") (param $a i32) (param $b i32) (result i32)
+        (i32.add (local.get $a) (local.get $b))
+      )
+    )
+    """
+  end
 end
 ```
 
