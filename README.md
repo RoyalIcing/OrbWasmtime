@@ -22,6 +22,8 @@ OrbWasmtime lets you run a WebAssembly module and interact with it. You can call
 
 ```elixir
 defmodule Example do
+  alias OrbWasmtime.Instance
+
   def run() do
     inst = Instance.run(example_wat())
     add = Instance.capture(inst, :add, 2)
