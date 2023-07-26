@@ -737,6 +737,7 @@ impl RunningInstance {
         Self::new_with_imports(wat_source, imports_table, noop)
     }
 
+    // TODO: make return WasmSupportedValue
     fn get_global_value_i32(&mut self, global_name: String) -> Result<i32, anyhow::Error> {
         let global_val = self
             .instance
@@ -753,6 +754,7 @@ impl RunningInstance {
         }
     }
 
+    // TODO: make accept WasmSupportedValue
     fn set_global_value_i32(
         &mut self,
         global_name: String,
@@ -766,6 +768,7 @@ impl RunningInstance {
         return global.set(&mut self.store, Val::I32(new_value as i32));
     }
 
+    // TODO: replace with call()
     fn call_0(&mut self, f: String) -> Result<(), anyhow::Error> {
         let answer = self
             .instance
@@ -779,6 +782,7 @@ impl RunningInstance {
         return Ok(result);
     }
 
+    // TODO: remove
     fn call_i32(&mut self, f: String, args: Vec<u32>) -> Result<Vec<u32>, anyhow::Error> {
         let func = self
             .instance
@@ -871,6 +875,7 @@ impl RunningInstance {
     //     Ok(())
     // }
 
+    // TODO: use WasmSupportedValue
     fn write_i32(&mut self, memory_offset: u32, value: u32) -> Result<(), anyhow::Error> {
         let offset: usize = memory_offset.try_into().unwrap();
         let bytes = value.to_le_bytes();
@@ -878,6 +883,7 @@ impl RunningInstance {
         Ok(())
     }
 
+    // TODO: use WasmSupportedValue
     fn write_i64(&mut self, memory_offset: u32, value: u64) -> Result<(), anyhow::Error> {
         let offset: usize = memory_offset.try_into().unwrap();
         let bytes = value.to_le_bytes();
