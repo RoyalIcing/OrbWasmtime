@@ -332,6 +332,7 @@ fn wasm_extract_string(
 
 #[derive(NifTaggedEnum)]
 enum WasmStepInstruction {
+    // TODO: change from u32 to WasmSupportedValue
     Call(String, Vec<u32>),
     CallString(String, Vec<u32>),
     WriteStringNulTerminated(u32, String, bool),
