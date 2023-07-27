@@ -958,18 +958,6 @@ fn wasm_instance_call_func(
 }
 
 #[nif(schedule = "DirtyCpu")]
-fn wasm_instance_call_func_i32(
-    env: Env,
-    resource: ResourceArc<RunningInstanceResource>,
-    f: String,
-    args: Vec<u32>,
-) -> Result<Term, Error> {
-    let mut instance = resource.lock.write().map_err(string_error)?;
-    let result = instance.call_i32(f, args).map_err(string_error)?;
-    return Ok(map_return_values_i32(env, result));
-}
-
-#[nif(schedule = "DirtyCpu")]
 fn wasm_instance_call_func_i32_string(
     env: Env,
     resource: ResourceArc<RunningInstanceResource>,
@@ -1204,7 +1192,6 @@ rustler::init!(
         wasm_instance_get_global_i32,
         wasm_instance_set_global_i32,
         wasm_instance_call_func,
-        wasm_instance_call_func_i32,
         wasm_instance_call_func_i32_string,
         wasm_instance_cast_func_i32,
         wasm_instance_write_i32,

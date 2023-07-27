@@ -48,7 +48,6 @@ defmodule OrbWasmtime.Rust do
   def wasm_instance_get_global_i32(_, _), do: error()
   def wasm_instance_set_global_i32(_, _, _), do: error()
   def wasm_instance_call_func(_, _, _), do: error()
-  def wasm_instance_call_func_i32(_, _, _), do: error()
   def wasm_instance_call_func_i32_string(_, _, _), do: error()
   def wasm_instance_cast_func_i32(_, _, _), do: error()
   def wasm_instance_write_i32(_, _, _), do: error()
