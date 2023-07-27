@@ -8,6 +8,7 @@ cargo_build:
 
 .PHONY: test
 test:
+	mix format --check-formatted
 	ORB_WASMTIME_BUILD=1 mix test
 
 .PHONY: rustler_precompiled_download
