@@ -780,6 +780,7 @@ impl RunningInstance {
         result
     }
 
+    // TODO: change to accept Vec<WasmSupportedValue>
     fn call_i32_string(&mut self, f: String, args: Vec<u32>) -> Result<String, anyhow::Error> {
         let func = self
             .instance
