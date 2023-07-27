@@ -271,14 +271,6 @@ fn wasm_call(
 }
 
 #[nif]
-fn wasm_call_void(wat_source: String, f: String) -> Result<(), Error> {
-    let source = WasmModuleDefinition::Wat(wat_source);
-    RunningInstance::new(source)
-        .and_then(|mut i| i.call_0(f))
-        .map_err(string_error)
-}
-
-#[nif]
 fn wasm_call_i32_string(wat_source: String, f: String, args: Vec<u32>) -> Result<String, Error> {
     let source = WasmModuleDefinition::Wat(wat_source);
     RunningInstance::new(source)
@@ -1206,7 +1198,6 @@ rustler::init!(
         wasm_list_exports,
         wasm_list_imports,
         wasm_call,
-        wasm_call_void,
         wasm_call_i32_string,
         wasm_steps,
         wasm_run_instance,

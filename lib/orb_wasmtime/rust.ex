@@ -40,7 +40,6 @@ defmodule OrbWasmtime.Rust do
   def wasm_list_imports(_), do: error()
 
   def wasm_call(_, _, _), do: error()
-  def wasm_call_void(_, _), do: error()
   def wasm_call_i32_string(_, _, _), do: error()
 
   def wasm_steps(_, _), do: error()
