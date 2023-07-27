@@ -354,7 +354,9 @@ defmodule OrbWasmtime.Wasm do
     f = to_string(f)
     args = Enum.map(args, &transform32/1)
     # Rust.wasm_instance_call_func(instance, f, args)
-    get_instance_handle(instance) |> Rust.wasm_instance_call_func(f, args) |> Decode.process_term_result()
+    get_instance_handle(instance)
+    |> Rust.wasm_instance_call_func(f, args)
+    |> Decode.process_term_result()
   end
 
   # def instance_call(instance, f), do: Rust.wasm_instance_call_func(instance, f)
