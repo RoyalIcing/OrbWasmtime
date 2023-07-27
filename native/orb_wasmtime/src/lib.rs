@@ -736,20 +736,6 @@ impl RunningInstance {
         return global.set(&mut self.store, Val::I32(new_value as i32));
     }
 
-    // TODO: replace with call()
-    fn call_0(&mut self, f: String) -> Result<(), anyhow::Error> {
-        let answer = self
-            .instance
-            .get_func(&mut self.store, &f)
-            .expect(&format!("{} was not an exported function", f));
-
-        // FIXME: this errs if the return type is not i32
-        let answer = answer.typed::<(), ()>(&mut self.store)?;
-        let result = answer.call(&mut self.store, ())?;
-
-        return Ok(result);
-    }
-
     // TODO: remove
     fn call_i32(&mut self, f: String, args: Vec<u32>) -> Result<Vec<u32>, anyhow::Error> {
         let func = self
