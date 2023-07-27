@@ -157,12 +157,6 @@ defmodule OrbWasmtime.Wasm do
   def call_string(source, f, a, b),
     do: process_source(source) |> Rust.wasm_call_i32_string(f, [a, b])
 
-  def bulk_call(source, calls) do
-    for result <- process_source(source) |> Rust.wasm_call_bulk(calls) do
-      Wasm.Decode.process_list_result(result)
-    end
-  end
-
   def steps(source, steps) do
     wat = process_source(source)
     results = wat |> Rust.wasm_steps(steps)

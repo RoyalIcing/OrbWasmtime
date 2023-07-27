@@ -318,26 +318,6 @@ defmodule OrbWasmtime.Wasm.Test do
   )
   """
 
-  test "bulk_call/2 global calculates mean" do
-    [nil, nil, nil, result] =
-      Wasm.bulk_call(@wasm_calculate_mean, [
-        {"insert", [i32: 5]},
-        {"insert", [i32: 7]},
-        {"insert", [i32: 9]},
-        {"calculate_mean", []}
-      ])
-
-    # [nil, nil, nil, result] =
-    #   Wasm.bulk_call(CalculateMean, [
-    #     CalculateMean.insert(5),
-    #     CalculateMean.insert(7),
-    #     CalculateMean.insert(9),
-    #     CalculateMean.calculate_mean(),
-    #   ])
-
-    assert result == 7
-  end
-
   test "steps/2 global calculates mean" do
     [nil, nil, nil, result] =
       Wasm.steps(@wasm_calculate_mean, [

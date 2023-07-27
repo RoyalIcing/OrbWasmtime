@@ -395,35 +395,6 @@ fn wasm_steps_internal(
     return Ok(results);
 }
 
-#[derive(NifTuple)]
-struct WasmBulkCall {
-    f: String,
-    args: Vec<WasmSupportedValue>,
-}
-
-#[nif]
-fn wasm_call_bulk(
-    wat_source: String,
-    calls: Vec<WasmBulkCall>,
-) -> Result<Vec<Vec<WasmSupportedValue>>, Error> {
-    wasm_call_bulk_internal(wat_source, true, calls).map_err(string_error)
-}
-
-fn wasm_call_bulk_internal(
-    wat_source: String,
-    buffer: bool,
-    calls: Vec<WasmBulkCall>,
-) -> Result<Vec<Vec<WasmSupportedValue>>, anyhow::Error> {
-    let mut running_instance = RunningInstance::new(WasmModuleDefinition::Wat(wat_source))?;
-
-    let results: Result<Vec<_>, _> = calls
-        .into_iter()
-        .map(|call| running_instance.call(call.f, call.args))
-        .collect();
-
-    return Ok(results?);
-}
-
 struct RunningInstanceResource {
     identifier: String,
     // lock: RwLock<RunningInstance>,
@@ -1246,7 +1217,6 @@ rustler::init!(
         wasm_call,
         wasm_call_void,
         wasm_call_i32_string,
-        wasm_call_bulk,
         wasm_steps,
         wasm_run_instance,
         wasm_instance_get_global_i32,
