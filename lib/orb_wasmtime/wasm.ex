@@ -3,6 +3,7 @@ defmodule OrbWasmtime.Wasm do
   Take a WebAssembly module and list its exports or call a one-shot function.
   """
 
+  alias OrbWasmtime.Wasm.Decode
   alias OrbWasmtime.Rust
 
   alias __MODULE__
@@ -141,7 +142,7 @@ defmodule OrbWasmtime.Wasm do
 
   defp call_apply_raw(source, f, args) do
     f = to_string(f)
-    process_source(source) |> Rust.wasm_call(f, args) |> Wasm.Process.process_result()
+    process_source(source) |> Rust.wasm_call(f, args) |> Wasm.Decode.process_list_result()
   end
 
   # defp transform32(a)
@@ -158,7 +159,7 @@ defmodule OrbWasmtime.Wasm do
 
   def bulk_call(source, calls) do
     for result <- process_source(source) |> Rust.wasm_call_bulk(calls) do
-      Wasm.Process.process_result(result)
+      Wasm.Decode.process_list_result(result)
     end
   end
 
@@ -254,7 +255,7 @@ defmodule OrbWasmtime.Wasm do
       # TODO: pass correct params
       # TODO: pass instance to func, so it can read memory
 
-      input = Wasm.Process.process_result(term)
+      input = Wasm.Decode.process_list_result(term)
 
       # output = handler.(0)
       output =
@@ -351,8 +352,9 @@ defmodule OrbWasmtime.Wasm do
 
   defp do_instance_call(instance, f, args) do
     f = to_string(f)
+    args = Enum.map(args, &transform32/1)
     # Rust.wasm_instance_call_func(instance, f, args)
-    get_instance_handle(instance) |> Rust.wasm_instance_call_func_i32(f, args)
+    get_instance_handle(instance) |> Rust.wasm_instance_call_func(f, args) |> Decode.process_term_result()
   end
 
   # def instance_call(instance, f), do: Rust.wasm_instance_call_func(instance, f)
@@ -484,16 +486,28 @@ defmodule OrbWasmtime.Wasm do
   end
 end
 
-defmodule OrbWasmtime.Wasm.Process do
+defmodule OrbWasmtime.Wasm.Decode do
   defp process_value({:i32, a}), do: a
   defp process_value({:f32, a}), do: a
 
-  def process_result([]), do: nil
-  def process_result([a]), do: process_value(a)
+  def process_list_result([]), do: nil
+  def process_list_result([a]), do: process_value(a)
 
-  def process_result(multiple_items) when is_list(multiple_items),
+  def process_list_result(multiple_items) when is_list(multiple_items),
     do: List.to_tuple(multiple_items |> Enum.map(&process_value/1))
 
-  def process_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
-  def process_result({:error, s}), do: {:error, s}
+  def process_list_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
+  def process_list_result({:error, s}), do: {:error, s}
+
+  def process_term_result(nil), do: nil
+  def process_term_result({:i32, a}), do: a
+  def process_term_result({:f32, a}), do: a
+
+  # I’m not happy with how theo previous two cases and this are both tuples. It’s confusing.
+  def process_term_result(tuple) when is_tuple(tuple) do
+    tuple |> Tuple.to_list() |> Enum.map(&process_value/1) |> List.to_tuple()
+  end
+
+  def process_term_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
+  def process_term_result({:error, s}), do: {:error, s}
 end

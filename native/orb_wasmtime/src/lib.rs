@@ -15,8 +15,8 @@ use std::thread;
 use wasmtime::*;
 //use anyhow::Error as anyhowError;
 use rustler::{
-    nif, Atom, Binary, Encoder, Env, Error, LocalPid, NewBinary, NifRecord, NifStruct,
-    NifTaggedEnum, NifTuple, NifUnitEnum, OwnedBinary, OwnedEnv, ResourceArc, Term,
+    nif, Binary, Encoder, Env, Error, LocalPid, NewBinary, NifStruct, NifTaggedEnum, NifTuple,
+    NifUnitEnum, OwnedBinary, OwnedEnv, ResourceArc, Term,
 };
 use wabt::Wat2Wasm;
 
@@ -188,6 +188,19 @@ impl Into<wasmtime::Val> for WasmSupportedValue {
             WasmSupportedValue::I64(i) => Val::I64(i),
             WasmSupportedValue::F32(f) => f.into(),
             WasmSupportedValue::F64(f) => f.into(),
+        }
+    }
+}
+
+impl WasmSupportedValue {
+    fn map_return_values(env: Env, values: Vec<WasmSupportedValue>) -> Term {
+        match values[..] {
+            [] => rustler::types::atom::nil().encode(env),
+            [a] => a.encode(env),
+            [a, b] => (a, b).encode(env),
+            [a, b, c] => (a, b, c).encode(env),
+            [a, b, c, d] => (a, b, c, d).encode(env),
+            [..] => values.encode(env), // Gets encoded as a list
         }
     }
 }
@@ -982,11 +995,11 @@ fn wasm_instance_call_func(
     env: Env,
     resource: ResourceArc<RunningInstanceResource>,
     f: String,
-) -> Result<(), Error> {
+    args: Vec<WasmSupportedValue>,
+) -> Result<Term, Error> {
     let mut instance = resource.lock.write().map_err(string_error)?;
-    let result = instance.call_0(f).map_err(string_error)?;
-
-    return Ok(result);
+    let result = instance.call(f, args).map_err(string_error)?;
+    Ok(WasmSupportedValue::map_return_values(env, result))
 }
 
 #[nif(schedule = "DirtyCpu")]

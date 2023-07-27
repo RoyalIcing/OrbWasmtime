@@ -87,7 +87,7 @@ defmodule OrbWasmtime.Wasm.Test do
     )
     """
 
-    assert Wasm.call(wasm_source, "answer", 17) == 42
+    assert Wasm.call(wasm_source, "answer", 17) === 42
   end
 
   test "call/4 adding two numbers" do
@@ -102,10 +102,10 @@ defmodule OrbWasmtime.Wasm.Test do
     )
     """
 
-    assert Wasm.call(wasm_source, "add", 7, 5) == 12
+    assert Wasm.call(wasm_source, "add", 7, 5) === 12
   end
 
-  test "call/4 multiplying two numbers" do
+  test "call/4 multiplying two i32s" do
     wasm_source = """
     (module $multiply_func
       (func $multiply (param $a i32) (param $b i32) (result i32)
@@ -117,7 +117,50 @@ defmodule OrbWasmtime.Wasm.Test do
     )
     """
 
-    assert Wasm.call(wasm_source, "multiply", 7, 5) == 35
+    assert Wasm.call(wasm_source, "multiply", 7, 5) === 35
+  end
+
+  test "call/4 swapping two i32s" do
+    wasm_source = """
+    (module
+      (func $swap (param $a i32) (param $b i32) (result i32 i32)
+        (local.get $b)
+        (local.get $a)
+      )
+      (export "swap" (func $swap))
+    )
+    """
+
+    assert Wasm.call(wasm_source, "swap", 7, 5) === {5, 7}
+  end
+
+  test "call/4 multiplying two f32s" do
+    wasm_source = """
+    (module $multiply_func
+      (func $multiply (param $a f32) (param $b f32) (result f32)
+        (local.get $a)
+        (local.get $b)
+        (f32.mul)
+      )
+      (export "multiply" (func $multiply))
+    )
+    """
+
+    assert Wasm.call(wasm_source, "multiply", 7.0, 5.0) === 35.0
+  end
+
+  test "call/4 swapping two f32s" do
+    wasm_source = """
+    (module
+      (func $swap (param $a f32) (param $b f32) (result f32 f32)
+        (local.get $b)
+        (local.get $a)
+      )
+      (export "swap" (func $swap))
+    )
+    """
+
+    assert Wasm.call(wasm_source, "swap", 7.0, 5.0) === {5.0, 7.0}
   end
 
   test "call/3 checking a number is within a range" do
@@ -138,24 +181,24 @@ defmodule OrbWasmtime.Wasm.Test do
     """
 
     validate = &Wasm.call(wasm_source, "validate", &1)
-    assert validate.(-1) == 0
-    assert validate.(0) == 0
-    assert validate.(1) == 1
-    assert validate.(2) == 1
-    assert validate.(10) == 1
-    assert validate.(13) == 1
-    assert validate.(255) == 1
-    assert validate.(256) == 0
-    assert validate.(257) == 0
-    assert validate.(2000) == 0
+    assert validate.(-1) === 0
+    assert validate.(0) === 0
+    assert validate.(1) === 1
+    assert validate.(2) === 1
+    assert validate.(10) === 1
+    assert validate.(13) === 1
+    assert validate.(255) === 1
+    assert validate.(256) === 0
+    assert validate.(257) === 0
+    assert validate.(2000) === 0
 
     instance = Wasm.run_instance(wasm_source)
     # validate = Wasm.instance_get_func_i32(validate: 1)
     validate = &Wasm.instance_call(instance, "validate", &1)
-    assert validate.(0) == 0
-    assert validate.(1) == 1
-    assert validate.(255) == 1
-    assert validate.(256) == 0
+    assert validate.(0) === 0
+    assert validate.(1) === 1
+    assert validate.(255) === 1
+    assert validate.(256) === 0
   end
 
   test "wasm_string/2 spits out string" do
