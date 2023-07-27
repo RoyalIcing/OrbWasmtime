@@ -7,6 +7,9 @@ defmodule OrbWasmtime.Rust do
   mix_config = Mix.Project.config()
   version = mix_config[:version]
   github_url = mix_config[:package][:links]["GitHub"]
+  # Since Rustler 0.27.0, we need to change manually the mode for each env.
+  # We want "debug" in dev and test because it's faster to compile.
+  mode = if Mix.env() in [:dev, :test], do: :debug, else: :release
 
   use RustlerPrecompiled,
     otp_app: :orb_wasmtime,
@@ -23,6 +26,7 @@ defmodule OrbWasmtime.Rust do
 			x86_64-unknown-linux-gnu
 			x86_64-unknown-linux-musl
 		),
+    mode: mode,
     force_build: System.get_env("ORB_WASMTIME_BUILD") in ["1", "true"]
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)
@@ -46,7 +50,7 @@ defmodule OrbWasmtime.Rust do
   def wasm_run_instance(_, _, _, _), do: error()
   def wasm_instance_get_global_i32(_, _), do: error()
   def wasm_instance_set_global_i32(_, _, _), do: error()
-  def wasm_instance_call_func(_, _), do: error()
+  def wasm_instance_call_func(_, _, _), do: error()
   def wasm_instance_call_func_i32(_, _, _), do: error()
   def wasm_instance_call_func_i32_string(_, _, _), do: error()
   def wasm_instance_cast_func_i32(_, _, _), do: error()
