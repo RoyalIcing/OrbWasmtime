@@ -259,14 +259,6 @@ fn wasm_list_imports(source: WasmModuleDefinition) -> Result<Vec<WasmImport>, Er
 }
 
 #[nif(schedule = "DirtyCpu")]
-fn wasm_call_i32(wat_source: String, f: String, args: Vec<u32>) -> Result<Vec<u32>, Error> {
-    let source = WasmModuleDefinition::Wat(wat_source);
-    RunningInstance::new(source)
-        .and_then(|mut i| i.call_i32(f, args))
-        .map_err(string_error)
-}
-
-#[nif(schedule = "DirtyCpu")]
 fn wasm_call(
     wat_source: String,
     f: String,
@@ -1213,7 +1205,6 @@ rustler::init!(
         strlen,
         wasm_list_exports,
         wasm_list_imports,
-        wasm_call_i32,
         wasm_call,
         wasm_call_void,
         wasm_call_i32_string,
