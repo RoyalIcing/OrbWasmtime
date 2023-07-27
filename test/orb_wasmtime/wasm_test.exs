@@ -105,20 +105,6 @@ defmodule OrbWasmtime.Wasm.Test do
     assert Wasm.call(wasm_source, "add", 7, 5) == 12
   end
 
-  @wasm_add2ints """
-  (module $Add2Ints
-    (func $add (export "add") (param $a i32) (param $b i32) (result i32)
-      (local.get $a)
-      (local.get $b)
-      (i32.add)
-    )
-  )
-  """
-
-  test "call/4 adding two numbers" do
-    assert Wasm.call(@wasm_add2ints, "add", 7, 5) == 12
-  end
-
   test "call/4 multiplying two numbers" do
     wasm_source = """
     (module $multiply_func
