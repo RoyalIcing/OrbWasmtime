@@ -115,7 +115,7 @@ defmodule OrbWasmtime.Wasm.Test do
   )
   """
 
-  test "call/4 defwasm adding two numbers" do
+  test "call/4 adding two numbers" do
     assert Wasm.call(@wasm_add2ints, "add", 7, 5) == 12
   end
 
