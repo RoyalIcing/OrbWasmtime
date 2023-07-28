@@ -2,9 +2,9 @@
 force_build:
 	ORB_WASMTIME_BUILD=1 mix compile
 
-.PHONY: cargo_build
-cargo_build:
-	cd native/orb_wasmtime && cargo build
+.PHONY: cargo_check
+cargo_check:
+	cd native/orb_wasmtime && cargo check && cargo clean
 
 .PHONY: test
 test:
