@@ -9,7 +9,7 @@ defmodule OrbWasmtime.Rust do
   github_url = mix_config[:package][:links]["GitHub"]
   # Since Rustler 0.27.0, we need to change manually the mode for each env.
   # We want "debug" in dev and test because it's faster to compile.
-  mode = if Mix.env() in [:dev, :test], do: :debug, else: :release
+  # mode = if Mix.env() in [:dev, :test], do: :debug, else: :release
 
   use RustlerPrecompiled,
     otp_app: :orb_wasmtime,
@@ -26,7 +26,7 @@ defmodule OrbWasmtime.Rust do
 			x86_64-unknown-linux-gnu
 			x86_64-unknown-linux-musl
 		),
-    mode: mode,
+    # mode: mode,
     force_build: System.get_env("ORB_WASMTIME_BUILD") in ["1", "true"]
 
   defp error, do: :erlang.nif_error(:nif_not_loaded)
