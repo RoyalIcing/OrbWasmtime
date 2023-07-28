@@ -1,4 +1,4 @@
-defmodule OrbWasmtime.Instance.Test do
+defmodule OrbWasmtime.Instance.URLEncodedTest do
   use ExUnit.Case, async: true
 
   alias OrbWasmtime.Wasm

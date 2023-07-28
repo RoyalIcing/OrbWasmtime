@@ -161,6 +161,8 @@ enum WasmExport {
 
 #[derive(NifTaggedEnum, Debug, Copy, Clone)]
 enum WasmSupportedValue {
+    U32(u32),
+    U64(u64),
     I32(i32),
     I64(i64),
     F32(f32),
@@ -184,6 +186,8 @@ impl TryFrom<&wasmtime::Val> for WasmSupportedValue {
 impl Into<wasmtime::Val> for WasmSupportedValue {
     fn into(self) -> wasmtime::Val {
         match self {
+            WasmSupportedValue::U32(i) => Val::I32(i as i32),
+            WasmSupportedValue::U64(i) => Val::I64(i as i64),
             WasmSupportedValue::I32(i) => Val::I32(i),
             WasmSupportedValue::I64(i) => Val::I64(i),
             WasmSupportedValue::F32(f) => f.into(),

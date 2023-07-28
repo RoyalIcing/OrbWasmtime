@@ -146,7 +146,8 @@ defmodule OrbWasmtime.Wasm do
   end
 
   # defp transform32(a)
-  defp transform32(a) when is_integer(a), do: {:i32, a}
+  defp transform32(a) when is_integer(a) and a < 0, do: {:i32, a}
+  defp transform32(a) when is_integer(a), do: {:u32, a}
   defp transform32(a) when is_float(a), do: {:f32, a}
 
   def call_string(source, f), do: process_source(source) |> Rust.wasm_call_i32_string(f, [])
