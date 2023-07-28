@@ -92,7 +92,7 @@ defmodule OrbWasmtime.Instance do
     end
   end
 
-  def capture(inst, f, arity) do
+  defp capture_then(inst, f, arity, transform_result) when is_function(transform_result) do
     f = to_string(f)
 
     case inst do
@@ -111,19 +111,34 @@ defmodule OrbWasmtime.Instance do
     # call = Function.capture(__MODULE__, :call, arity + 2)
     case arity do
       0 ->
-        fn -> call(inst, f) end
+        fn -> call(inst, f) |> then(transform_result) end
 
       1 ->
-        fn a -> call(inst, f, wrap.(a)) end
+        fn a -> call(inst, f, wrap.(a)) |> then(transform_result) end
 
       2 ->
-        fn a, b -> call(inst, f, wrap.(a), wrap.(b)) end
+        fn a, b -> call(inst, f, wrap.(a), wrap.(b)) |> then(transform_result) end
 
       3 ->
         fn a, b, c ->
-          call(inst, f, wrap.(a), wrap.(b), wrap.(c))
+          call(inst, f, wrap.(a), wrap.(b), wrap.(c)) |> then(transform_result)
         end
     end
+  end
+
+  def capture(inst, f, arity) do
+    capture_then(inst, f, arity, &Function.identity/1)
+  end
+
+  def capture(inst, :u32, f, arity) do
+    capture_then(inst, f, arity, fn value when is_integer(value) ->
+      if value < 0 do
+        # TODO: we could also let Rust handle this
+        Bitwise.bxor(0xFFFF_FFFF, value) * -1 - 1
+      else
+        value
+      end
+    end)
   end
 
   def capture(inst, String, f, arity) do
