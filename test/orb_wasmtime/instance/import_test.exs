@@ -25,6 +25,10 @@ defmodule OrbWasmtime.Instance.ImportTest do
         {:log, :ping,
          fn ->
            nil
+         end},
+        {:generate, :magic_numbers,
+         fn ->
+           {42, 99}
          end}
       ])
 
@@ -36,6 +40,8 @@ defmodule OrbWasmtime.Instance.ImportTest do
     assert_receive({:logf32, 1.5})
     assert_receive({:logf32, 12.5})
     assert_receive({:logf32, 8.0})
+    assert_receive({:logi32, 42})
+    assert_receive({:logi32, 99})
   end
 
   defp wat() do
@@ -45,6 +51,7 @@ defmodule OrbWasmtime.Instance.ImportTest do
       (import "log" "float32" (func $logf32 (param f32) (result f32)))
       (import "math" "powf32" (func $powf32 (param f32 f32) (result f32)))
       (import "log" "ping" (func $ping))
+      (import "generate" "magic_numbers" (func $magic_numbers (result i32 i32)))
       (func (export "test")
         (local $i i32)
         (local $f f32)
@@ -64,6 +71,12 @@ defmodule OrbWasmtime.Instance.ImportTest do
         drop
 
         (call $ping)
+
+        (call $magic_numbers)
+        (call $logi32)
+        drop
+        (call $logi32)
+        drop
       )
     )
     """

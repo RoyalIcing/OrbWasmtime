@@ -12,13 +12,17 @@ defmodule OrbWasmtime.Instance do
 
   defstruct [:elixir_mod, :exports, :handle]
 
-  def run(mod, imports \\ []) do
-    exports = Wasm.grouped_exports(mod)
-    handle = Wasm.run_instance(mod, imports)
-    %__MODULE__{elixir_mod: mod, exports: exports, handle: handle}
+  def run(input, imports \\ []) do
+    exports = Wasm.grouped_exports(input)
+    handle = Wasm.run_instance(input, imports)
+    %__MODULE__{elixir_mod: input, exports: exports, handle: handle}
   rescue
     x in [RuntimeError, Protocol.UndefinedError] ->
-      wat = mod.to_wat()
+      wat =
+        case input do
+          s when is_binary(s) -> s
+          mod when is_atom(mod) -> mod.to_wat()
+        end
 
       case Wasm.to_wasm(wat) do
         {:error, reason} ->
