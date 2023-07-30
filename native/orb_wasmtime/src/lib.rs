@@ -407,7 +407,7 @@ struct RunningInstance {
 }
 
 #[derive(Clone, NifStruct)]
-#[module = "ComponentsGuide.Wasm.FuncImport"]
+#[module = "OrbWasmtime.Wasm.FuncImport"]
 struct FuncImport {
     unique_id: i64,
     module_name: String,

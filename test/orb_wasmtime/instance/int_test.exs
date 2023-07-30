@@ -1,7 +1,6 @@
 defmodule OrbWasmtime.Instance.IntTest do
   use ExUnit.Case, async: true
 
-  alias OrbWasmtime.Wasm
   alias OrbWasmtime.Instance
 
   test "passing 32-bit integers" do
