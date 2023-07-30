@@ -231,12 +231,28 @@ defmodule OrbWasmtime.Wasm do
       # IO.inspect(func_id, label: "reply_to_func_call_out func_id")
       # IO.inspect(resource, label: "reply_to_func_call_out resource")
 
-      handler =
+      {handler, params_arity} =
         imports
         |> Enum.find_value(fn
-          %FuncImport{unique_id: ^func_id, do: handler} -> handler
-          _ -> nil
-        end)
+          %FuncImport{unique_id: ^func_id, do: handler, param_types: nil} ->
+            {handler, 0}
+
+          %FuncImport{unique_id: ^func_id, do: handler, param_types: params}
+          when is_atom(params) ->
+            {handler, 1}
+
+          %FuncImport{unique_id: ^func_id, do: handler, param_types: params}
+          when is_tuple(params) ->
+            {handler, tuple_size(params)}
+
+          %FuncImport{unique_id: ^func_id, do: handler, param_types: params}
+          when is_list(params) ->
+            {handler, length(params)}
+
+          _ ->
+            nil
+        end) ||
+          raise "Expected imported function #{func_id} to be provided."
 
       # IO.inspect(handler, label: "reply_to_func_call_out found handler")
       # IO.inspect(term, label: "reply_to_func_call_out term")
@@ -250,14 +266,24 @@ defmodule OrbWasmtime.Wasm do
 
       input = Wasm.Decode.process_list_result(term)
 
-      # output = handler.(0)
+      args =
+        case input do
+          input when is_tuple(input) -> Tuple.to_list(input)
+          input -> List.wrap(input)
+        end
+
+      params_plus_caller_arity = params_arity + 1
+
       output =
         case Function.info(handler, :arity) do
-          {:arity, 1} ->
-            handler.(input)
+          {:arity, ^params_arity} ->
+            apply(handler, args)
 
-          {:arity, 2} ->
-            handler.(resource, input)
+          {:arity, ^params_plus_caller_arity} ->
+            apply(handler, [resource | args])
+
+          {:arity, arity} ->
+            raise "Expected import callback to have arity #{params_arity} or #{params_plus_caller_arity}, instead have #{arity}."
         end
 
       output = Decode.transform32(output)
@@ -298,7 +324,6 @@ defmodule OrbWasmtime.Wasm do
         unique_id: index,
         module_name: mod,
         name: name,
-        # TODO: how to read string from memory?
         param_types: params,
         result_types: results,
         do: func
@@ -495,7 +520,7 @@ defmodule OrbWasmtime.Wasm.Decode do
   def process_list_result([a]), do: process_value(a)
 
   def process_list_result(multiple_items) when is_list(multiple_items),
-    do: List.to_tuple(multiple_items |> Enum.map(&process_value/1))
+    do: multiple_items |> Enum.map(&process_value/1) |> List.to_tuple()
 
   def process_list_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
   def process_list_result({:error, s}), do: {:error, s}
