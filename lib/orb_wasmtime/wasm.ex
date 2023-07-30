@@ -146,9 +146,7 @@ defmodule OrbWasmtime.Wasm do
   end
 
   # defp transform32(a)
-  defp transform32(a) when is_integer(a) and a < 0, do: {:i32, a}
-  defp transform32(a) when is_integer(a), do: {:u32, a}
-  defp transform32(a) when is_float(a), do: {:f32, a}
+  defp transform32(a), do: Decode.transform32(a)
 
   def call_string(source, f), do: process_source(source) |> Rust.wasm_call_i32_string(f, [])
 
@@ -261,6 +259,8 @@ defmodule OrbWasmtime.Wasm do
           {:arity, 2} ->
             handler.(resource, input)
         end
+
+      output = Decode.transform32(output)
 
       # IO.inspect(output, label: "reply_to_func_call_out output")
       Rust.wasm_call_out_reply(resource, output)
@@ -484,6 +484,10 @@ defmodule OrbWasmtime.Wasm do
 end
 
 defmodule OrbWasmtime.Wasm.Decode do
+  def transform32(a) when is_integer(a) and a < 0, do: {:i32, a}
+  def transform32(a) when is_integer(a), do: {:u32, a}
+  def transform32(a) when is_float(a), do: {:f32, a}
+
   defp process_value({:i32, a}), do: a
   defp process_value({:f32, a}), do: a
 

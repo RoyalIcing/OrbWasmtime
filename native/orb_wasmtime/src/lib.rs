@@ -484,7 +484,7 @@ struct CallOutToFuncReply {
     func_id: i64,
     lock: RwLock<Option<OwnedBinary>>,
     // sender: crossbeam_channel::Sender<OwnedBinary>,
-    sender: crossbeam_channel::Sender<u32>,
+    sender: crossbeam_channel::Sender<WasmSupportedValue>,
 
     memory_ptr_and_size: Option<(std::sync::atomic::AtomicPtr<u8>, usize)>,
 }
@@ -493,7 +493,7 @@ unsafe impl Send for CallOutToFuncReply {}
 impl CallOutToFuncReply {
     fn new(
         func_id: i64,
-        sender: crossbeam_channel::Sender<u32>,
+        sender: crossbeam_channel::Sender<WasmSupportedValue>,
         caller: Caller<()>,
         memory: Option<Memory>,
     ) -> Self {
@@ -549,7 +549,7 @@ impl ImportsTable {
                     let mut owned_env = OwnedEnv::new();
 
                     // let (sender, recv) = bounded::<OwnedBinary>(1);
-                    let (sender, recv) = bounded::<u32>(1);
+                    let (sender, recv) = bounded::<WasmSupportedValue>(1);
 
                     // let params2 = params.clone();
                     let params2: Result<Vec<WasmSupportedValue>> = params.iter().map(|v| v.try_into()).collect();
@@ -631,7 +631,7 @@ impl ImportsTable {
                     // let number: i32 = reply_term.decode()?;
 
                     if result_count > 0 {
-                        results[0] = Val::I32(number as i32);
+                        results[0] = number.into();
                     }
                     Ok(())
 
@@ -1075,13 +1075,13 @@ fn wasm_instance_read_string_nul_terminated(
 fn wasm_call_out_reply(
     env: Env,
     resource: ResourceArc<CallOutToFuncReply>,
-    reply: u32,
+    reply: WasmSupportedValue,
     // reply: Term,
 ) -> Result<(), Error> {
     // let mut binary = resource.lock.write().map_err(string_error)?;
     // *binary = Some(reply.to_binary());
 
-    eprintln!("Received reply in Rust! {reply}");
+    // eprintln!("Received reply in Rust! {reply}");
 
     resource.sender.send(reply).map_err(string_error)?;
 
