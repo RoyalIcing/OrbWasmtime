@@ -286,7 +286,7 @@ defmodule OrbWasmtime.Wasm do
             raise "Expected import callback to have arity #{params_arity} or #{params_plus_caller_arity}, instead have #{arity}."
         end
 
-      output = Decode.transform32(output)
+      output = output |> List.wrap() |> Enum.map(&Decode.transform32/1)
 
       # IO.inspect(output, label: "reply_to_func_call_out output")
       Rust.wasm_call_out_reply(resource, output)

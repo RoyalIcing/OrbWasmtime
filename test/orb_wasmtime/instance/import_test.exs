@@ -21,6 +21,10 @@ defmodule OrbWasmtime.Instance.ImportTest do
         {:math, :powf32,
          fn a, b ->
            Float.pow(a, b)
+         end},
+        {:log, :ping,
+         fn ->
+           nil
          end}
       ])
 
@@ -40,6 +44,7 @@ defmodule OrbWasmtime.Instance.ImportTest do
       (import "log" "int32" (func $logi32 (param i32) (result i32)))
       (import "log" "float32" (func $logf32 (param f32) (result f32)))
       (import "math" "powf32" (func $powf32 (param f32 f32) (result f32)))
+      (import "log" "ping" (func $ping))
       (func (export "test")
         (local $i i32)
         (local $f f32)
@@ -57,6 +62,8 @@ defmodule OrbWasmtime.Instance.ImportTest do
         (call $powf32 (f32.const 2.0) (f32.const 3.0))
         (call $logf32)
         drop
+
+        (call $ping)
       )
     )
     """

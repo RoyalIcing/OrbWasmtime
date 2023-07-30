@@ -176,8 +176,8 @@ impl TryFrom<&wasmtime::Val> for WasmSupportedValue {
         Ok(match val {
             Val::I32(i) => WasmSupportedValue::I32(*i),
             Val::I64(i) => WasmSupportedValue::I64(*i),
-            Val::F32(f) => WasmSupportedValue::F32(val.unwrap_f32()),
-            Val::F64(f) => WasmSupportedValue::F64(val.unwrap_f64()),
+            Val::F32(_f) => WasmSupportedValue::F32(val.unwrap_f32()),
+            Val::F64(_f) => WasmSupportedValue::F64(val.unwrap_f64()),
             val => anyhow::bail!("Unsupported val type {}", val.ty()),
         })
     }
@@ -371,7 +371,7 @@ fn wasm_steps_internal(
                 let string = running_instance.call_i32_string(f, args)?;
                 results.push(string.encode(env));
             }
-            WasmStepInstruction::WriteStringNulTerminated(offset, string, null_terminated) => {
+            WasmStepInstruction::WriteStringNulTerminated(offset, string, _null_terminated) => {
                 running_instance.write_string_nul_terminated(offset, string)?;
             }
             WasmStepInstruction::ReadMemory(start, length) => {
@@ -484,7 +484,7 @@ struct CallOutToFuncReply {
     func_id: i64,
     lock: RwLock<Option<OwnedBinary>>,
     // sender: crossbeam_channel::Sender<OwnedBinary>,
-    sender: crossbeam_channel::Sender<WasmSupportedValue>,
+    sender: crossbeam_channel::Sender<Vec<WasmSupportedValue>>,
 
     memory_ptr_and_size: Option<(std::sync::atomic::AtomicPtr<u8>, usize)>,
 }
@@ -493,7 +493,7 @@ unsafe impl Send for CallOutToFuncReply {}
 impl CallOutToFuncReply {
     fn new(
         func_id: i64,
-        sender: crossbeam_channel::Sender<WasmSupportedValue>,
+        sender: crossbeam_channel::Sender<Vec<WasmSupportedValue>>,
         caller: Caller<()>,
         memory: Option<Memory>,
     ) -> Self {
@@ -549,7 +549,7 @@ impl ImportsTable {
                     let mut owned_env = OwnedEnv::new();
 
                     // let (sender, recv) = bounded::<OwnedBinary>(1);
-                    let (sender, recv) = bounded::<WasmSupportedValue>(1);
+                    let (sender, recv) = bounded::<Vec<WasmSupportedValue>>(1);
 
                     // let params2 = params.clone();
                     let params2: Result<Vec<WasmSupportedValue>> = params.iter().map(|v| v.try_into()).collect();
@@ -631,7 +631,9 @@ impl ImportsTable {
                     // let number: i32 = reply_term.decode()?;
 
                     if result_count > 0 {
-                        results[0] = number.into();
+                        for (i, val) in number.iter().enumerate() {
+                            results[i] = (*val).into();
+                        }
                     }
                     Ok(())
 
@@ -1075,7 +1077,7 @@ fn wasm_instance_read_string_nul_terminated(
 fn wasm_call_out_reply(
     env: Env,
     resource: ResourceArc<CallOutToFuncReply>,
-    reply: WasmSupportedValue,
+    reply: Vec<WasmSupportedValue>,
     // reply: Term,
 ) -> Result<(), Error> {
     // let mut binary = resource.lock.write().map_err(string_error)?;
