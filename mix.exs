@@ -1,7 +1,7 @@
 defmodule OrbWasmtime.MixProject do
   use Mix.Project
 
-  @version "0.1.7"
+  @version "0.1.8"
   @source_url "https://github.com/RoyalIcing/orb_wasmtime"
   @force_build? System.get_env("ORB_WASMTIME_BUILD") in ["1", "true"]
 
