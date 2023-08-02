@@ -8,9 +8,9 @@ defmodule OrbWasmtime.Instance.ImportCallerTest do
       Instance.run(wat(), [
         {:test, :write_abc,
          fn caller, memory_offset ->
-            len = Instance.Caller.write_string_nul_terminated(caller, memory_offset, "abc")
-            assert len === 4
-            len
+           len = Instance.Caller.write_string_nul_terminated(caller, memory_offset, "abc")
+           assert len === 4
+           len
          end},
         {:test, :strlen,
          fn caller, memory_offset ->
