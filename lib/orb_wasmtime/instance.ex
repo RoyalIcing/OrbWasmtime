@@ -286,5 +286,9 @@ defmodule OrbWasmtime.Instance do
     defdelegate read_string_nul_terminated(caller, memory_offset),
       to: Rust,
       as: :wasm_caller_read_string_nul_terminated
+
+    defdelegate write_string_nul_terminated(caller, memory_offset, string),
+      to: Rust,
+      as: :wasm_caller_write_string_nul_terminated
   end
 end

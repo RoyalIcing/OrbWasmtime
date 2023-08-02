@@ -536,11 +536,11 @@ defmodule OrbWasmtime.Wasm.Decode do
   def process_term_result({:i32, a}), do: a
   def process_term_result({:f32, a}), do: a
 
-  # I’m not happy with how theo previous two cases and this are both tuples. It’s confusing.
+  def process_term_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
+  def process_term_result({:error, s}), do: {:error, s}
+
+  # I’m not happy with how the previous two cases {:i32, a} and this are both tuples. It’s confusing.
   def process_term_result(tuple) when is_tuple(tuple) do
     tuple |> Tuple.to_list() |> Enum.map(&process_value/1) |> List.to_tuple()
   end
-
-  def process_term_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
-  def process_term_result({:error, s}), do: {:error, s}
 end

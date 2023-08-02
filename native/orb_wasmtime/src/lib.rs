@@ -1119,6 +1119,35 @@ fn wasm_caller_read_string_nul_terminated(
     return Ok(string);
 }
 
+#[nif]
+fn wasm_caller_write_string_nul_terminated(
+    env: Env,
+    resource: ResourceArc<CallOutToFuncReply>,
+    memory_offset: u32,
+    string: String,
+) -> Result<u32, Error> {
+    let memory_ptr_and_size = resource
+        .memory_ptr_and_size
+        .as_ref()
+        .expect("Must have memory in order to read string.");
+
+    let memory_ptr = &memory_ptr_and_size.0;
+    let memory_size = memory_ptr_and_size.1;
+
+    let memory_ptr = memory_ptr.load(std::sync::atomic::Ordering::Relaxed);
+    // let data = &memory.data(&store)[start..];
+    let data: &mut [u8] = unsafe { slice::from_raw_parts_mut(memory_ptr as *mut u8, memory_size) };
+
+    let mut bytes = string.as_bytes().to_vec();
+    bytes.push(0);
+    let memory_offset = memory_offset as usize;
+    let len = bytes.len();
+    data[memory_offset..][..len].copy_from_slice(&bytes[..]);
+    // self.memory.write(&mut self.store, offset, &bytes)?;
+
+    Ok(bytes.len().try_into().unwrap())
+}
+
 // The `'a` in this function definition is something called a lifetime.
 // This will inform the Rust compiler of how long different things are
 // allowed to live. Don't worry too much about this, as this will be the
@@ -1196,6 +1225,7 @@ rustler::init!(
         wasm_instance_read_string_nul_terminated,
         wasm_call_out_reply,
         wasm_caller_read_string_nul_terminated,
+        wasm_caller_write_string_nul_terminated,
         wat2wasm,
         validate_module_definition
     ],
