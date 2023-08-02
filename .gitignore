@@ -25,6 +25,8 @@ orb_wasmtime-*.tar
 # Temporary files, for example, from tests.
 /tmp/
 
+.DS_Store
+
 # Rustler
 priv/native/
 /checksum-Elixir.OrbWasmtime.Rust.exs
