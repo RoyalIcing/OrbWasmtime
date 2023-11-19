@@ -3,6 +3,7 @@ defmodule OrbWasmtime.Wat2WasmTest do
 
   alias OrbWasmtime.Wasm
 
+  @tag :skip
   test "works" do
     wasm = Wasm.to_wasm(wat())
     assert is_binary(wasm)

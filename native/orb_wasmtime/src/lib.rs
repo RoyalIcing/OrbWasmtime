@@ -1174,6 +1174,7 @@ fn wat2wasm(env: Env, wat_source: String) -> Result<Binary, Error> {
 
     let mut features = wabt::Features::new();
     features.enable_multi_value();
+    features.enable_simd();
     let result: Result<Vec<u8>, wabt::Error> = wat2wasm_with_features(wat_source, features);
 
     return match result {
