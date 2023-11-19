@@ -46,3 +46,9 @@ end
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/orb_wasmtime>.
+
+## Releasing
+
+```bash
+mix rustler_precompiled.download OrbWasmtime.Rust --all --print --ignore-unavailable
+```
