@@ -13,5 +13,5 @@ crate-type = ["cdylib"]
 rustler = "0.29.0"
 anyhow = "1.0"
 crossbeam-channel = "0.5"
-wasmtime = "10.0.1"
+wasmtime = "14.0.4"
 wabt = "0.10.0"
