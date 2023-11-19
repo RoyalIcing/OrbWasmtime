@@ -521,7 +521,9 @@ defmodule OrbWasmtime.Wasm.Decode do
   def transform32(a) when is_float(a), do: {:f32, a}
 
   defp process_value({:i32, a}), do: a
+  defp process_value({:i64, a}), do: a
   defp process_value({:f32, a}), do: a
+  defp process_value({:f64, a}), do: a
 
   def process_list_result([]), do: nil
   def process_list_result([a]), do: process_value(a)
@@ -534,7 +536,9 @@ defmodule OrbWasmtime.Wasm.Decode do
 
   def process_term_result(nil), do: nil
   def process_term_result({:i32, a}), do: a
+  def process_term_result({:i64, a}), do: a
   def process_term_result({:f32, a}), do: a
+  def process_term_result({:f64, a}), do: a
 
   def process_term_result({:error, "failed to parse WebAssembly module"}), do: {:error, :parse}
   def process_term_result({:error, s}), do: {:error, s}
