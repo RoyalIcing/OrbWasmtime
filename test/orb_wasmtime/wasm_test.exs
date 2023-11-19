@@ -50,11 +50,36 @@ defmodule OrbWasmtime.Wasm.Test do
     assert Wasm.call(wasm_source, "answer") == 42
   end
 
+  test "call/2 i64" do
+    wasm_source = """
+    (module $single_func
+      (func (export "answer") (result i64)
+       i64.const 42
+      )
+    )
+    """
+
+    assert Wasm.call(wasm_source, "answer") == 42
+  end
+
   test "instance_call/2" do
     wasm_source = """
     (module $single_func
       (func (export "answer") (result i32)
        i32.const 42
+      )
+    )
+    """
+
+    instance = Wasm.run_instance(wasm_source)
+    assert Wasm.instance_call(instance, "answer") == 42
+  end
+
+  test "instance_call/2 i64" do
+    wasm_source = """
+    (module $single_func
+      (func (export "answer") (result i64)
+       i64.const 42
       )
     )
     """
