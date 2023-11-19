@@ -18,7 +18,7 @@ use rustler::{
     nif, Binary, Encoder, Env, Error, LocalPid, NewBinary, NifStruct, NifTaggedEnum, NifTuple,
     NifUnitEnum, OwnedBinary, OwnedEnv, ResourceArc, Term,
 };
-use wabt::Wat2Wasm;
+use wabt::{wat2wasm_with_features};
 
 #[nif]
 fn add(a: i64, b: i64) -> i64 {
@@ -1163,16 +1163,23 @@ fn load<'a>(env: Env<'a>, _load_info: Term<'a>) -> bool {
 #[nif(schedule = "DirtyCpu")]
 // fn wat2wasm(wat_source: String) -> Result<Vec<u8>, Error> {
 fn wat2wasm(env: Env, wat_source: String) -> Result<Binary, Error> {
-    let result = Wat2Wasm::new()
-        // .canonicalize_lebs(true)
-        // .write_debug_names(true)
-        .convert(wat_source);
+    // let wat2wasm = Wat2Wasm::new();
+
+    // wat2wasm.features.enable_multi_value();
+
+    // let result = wat2wasm
+    //     // .canonicalize_lebs(true)
+    //     // .write_debug_names(true)
+    //     .convert(wat_source);
+
+    let mut features = wabt::Features::new();
+    features.enable_multi_value();
+    let result: Result<Vec<u8>, wabt::Error> = wat2wasm_with_features(wat_source, features);
 
     return match result {
         Ok(v) => {
-            let v = v.as_ref();
             let mut b = NewBinary::new(env, v.len());
-            b.as_mut_slice().copy_from_slice(v);
+            b.as_mut_slice().copy_from_slice(&v);
             let b2: Binary = b.into();
             Ok(b2)
         }

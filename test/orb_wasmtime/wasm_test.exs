@@ -63,6 +63,21 @@ defmodule OrbWasmtime.Wasm.Test do
     assert Wasm.instance_call(instance, "answer") == 42
   end
 
+  test "run_instance with wasm" do
+    wat_source = """
+    (module $single_func
+      (func (export "answer") (result i32)
+       i32.const 42
+      )
+    )
+    """
+
+    wasm_source = wat_source |> Wasm.to_wasm()
+
+    instance = Wasm.run_instance(wasm_source)
+    assert Wasm.instance_call(instance, "answer") == 42
+  end
+
   test "call/2 uninitialized local" do
     wasm_source = """
     (module $single_func
