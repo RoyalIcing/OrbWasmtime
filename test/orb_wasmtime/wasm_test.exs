@@ -278,7 +278,7 @@ defmodule OrbWasmtime.Wasm.Test do
       (global $doctype (mut i32) (i32.const 65536))
       (data (i32.const 65536) "<!doctype html>")
       (func (export "main") (result i32 i32)
-        (get_global $doctype) (i32.const 15)
+        (global.get $doctype) (i32.const 15)
       )
     )
     """
