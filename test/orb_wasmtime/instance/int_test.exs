@@ -2,6 +2,7 @@ defmodule OrbWasmtime.Instance.IntTest do
   use ExUnit.Case, async: true
 
   alias OrbWasmtime.Instance
+  alias OrbWasmtime.Wasm
 
   test "passing 32-bit integers" do
     inst = Instance.run(wat())
@@ -25,5 +26,20 @@ defmodule OrbWasmtime.Instance.IntTest do
       )
     )
     """
+  end
+
+  @mathI64 ~S"""
+  (module $MathI64
+    (func $math (export "math") (param $a i64) (param $b i64) (result i64)
+      (local $denominator i64)
+      (i64.sub (i64.add (i64.const 4) (local.get $a)) (local.get $b))
+      (local.set $denominator)
+      (i64.div_s (i64.mul (local.get $a) (local.get $b)) (local.get $denominator))
+    )
+  )
+  """
+
+  test "call with i64" do
+    assert @mathI64 |> Wasm.call(:math, {:i64, 11}, {:i64, 7}) === 9
   end
 end

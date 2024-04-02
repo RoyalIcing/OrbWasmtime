@@ -519,6 +519,7 @@ defmodule OrbWasmtime.Wasm.Decode do
   def transform32(a) when is_integer(a) and a < 0, do: {:i32, a}
   def transform32(a) when is_integer(a), do: {:u32, a}
   def transform32(a) when is_float(a), do: {:f32, a}
+  def transform32(a) when is_tuple(a), do: a
 
   defp process_value({:i32, a}), do: a
   defp process_value({:i64, a}), do: a
