@@ -18,7 +18,7 @@ use rustler::{
     nif, Binary, Encoder, Env, Error, LocalPid, NewBinary, NifStruct, NifTaggedEnum, NifTuple,
     NifUnitEnum, OwnedBinary, OwnedEnv, ResourceArc, Term,
 };
-use wabt::{wat2wasm_with_features};
+use wabt::wat2wasm_with_features;
 
 #[nif]
 fn add(a: i64, b: i64) -> i64 {
@@ -178,7 +178,7 @@ impl TryFrom<&wasmtime::Val> for WasmSupportedValue {
             Val::I64(i) => WasmSupportedValue::I64(*i),
             Val::F32(_f) => WasmSupportedValue::F32(val.unwrap_f32()),
             Val::F64(_f) => WasmSupportedValue::F64(val.unwrap_f64()),
-            val => anyhow::bail!("Unsupported val type {}", val.ty()),
+            val => anyhow::bail!("Unsupported val type"),
         })
     }
 }
@@ -416,16 +416,25 @@ struct FuncImport {
     result_types: Vec<GlobalType>,
 }
 
-impl TryInto<wasmtime::FuncType> for FuncImport {
-    type Error = anyhow::Error;
-
-    fn try_into(self) -> Result<wasmtime::FuncType, anyhow::Error> {
+impl Into<(Vec<ValType>, Vec<ValType>)> for FuncImport {
+    fn into(self) -> (Vec<ValType>, Vec<ValType>) {
         let params: Vec<ValType> = self.param_types.into_iter().map(|t| t.into()).collect();
         let results: Vec<ValType> = self.result_types.into_iter().map(|t| t.into()).collect();
 
-        Ok(FuncType::new(params, results))
+        (params, results)
     }
 }
+
+// impl TryInto<wasmtime::FuncType> for FuncImport {
+//     type Error = anyhow::Error;
+
+//     fn try_into(self) -> Result<wasmtime::FuncType, anyhow::Error> {
+//         let params: Vec<ValType> = self.param_types.into_iter().map(|t| t.into()).collect();
+//         let results: Vec<ValType> = self.result_types.into_iter().map(|t| t.into()).collect();
+
+//         Ok(FuncType::new(params, results))
+//     }
+// }
 
 struct ImportsTable
 // where T: Fn(&[Val], &mut [Val]) -> Result<()>,
@@ -511,6 +520,7 @@ impl CallOutToFuncReply {
 impl ImportsTable {
     fn define<T: CallbackReceiver>(
         self,
+        engine: &Engine,
         linker: &mut Linker<()>,
         callback_receiver: T,
     ) -> Result<()> {
@@ -518,7 +528,9 @@ impl ImportsTable {
         let rc = Arc::new(callback_receiver);
 
         for fi in self.funcs {
-            let ft: FuncType = fi.clone().try_into()?;
+            let (params, results): (Vec<ValType>, Vec<ValType>) = fi.clone().into();
+            let ft = FuncType::new(engine, params, results);
+            // let ft: FuncType = fi.clone().try_into()?;
             // let ft: FuncType = FuncType::new(vec![ValType::I32], vec![ValType::I32]);
             let func_id = fi.unique_id;
 
@@ -689,7 +701,7 @@ impl RunningInstance {
             }
         };
 
-        imports.define(&mut linker, receiver)?;
+        imports.define(&engine, &mut linker, receiver)?;
 
         let instance = linker.instantiate(&mut store, &module)?;
 
@@ -723,7 +735,7 @@ impl RunningInstance {
             Some(Val::I32(i)) => Ok(i),
             Some(other_val) => Err(anyhow!(
                 "Only I32 globals are supported, got {} instead",
-                other_val.ty()
+                other_val.ty(&self.store)
             )),
             None => Err(anyhow!("{} was not an exported global", global_name)),
         }
@@ -1198,7 +1210,7 @@ fn validate_module_definition(env: Env, source: WasmModuleDefinition) -> Result<
             wabt::Module::parse_wat("hello.wat", source, wabt::Features::new())
         }
         WasmModuleDefinition::Wasm(b) => {
-            wabt::Module::read_binary(b.as_ref(), &wabt::ReadBinaryOptions::default())
+            wabt::Module::read_binary(b.as_slice(), &wabt::ReadBinaryOptions::default())
         }
     }
     .map_err(string_error)?;
