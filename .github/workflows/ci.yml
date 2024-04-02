@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  ELIXIR_VERSION: 1.15
+  ELIXIR_VERSION: 1.16
   OTP_VERSION: 26
   MIX_ENV: test
   ORB_WASMTIME_BUILD: "true"
