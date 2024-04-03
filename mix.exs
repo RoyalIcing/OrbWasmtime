@@ -33,7 +33,7 @@ defmodule OrbWasmtime.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:ex_doc, "~> 0.28", only: :docs, runtime: false},
+      {:ex_doc, "~> 0.31.2", only: :docs, runtime: false},
       {:rustler, "~> 0.31.0", optional: not @force_build?},
       {:rustler_precompiled, "~> 0.7.1"},
       {:benchee, "~> 1.0", only: :dev}
