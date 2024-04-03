@@ -15,11 +15,11 @@ defmodule OrbWasmtime.Rust do
     otp_app: :orb_wasmtime,
     base_url: "#{github_url}/releases/download/v#{version}",
     version: version,
+    # riscv64gc-unknown-linux-gnu
     targets: ~w(
 			aarch64-apple-darwin
 			aarch64-unknown-linux-gnu
 			aarch64-unknown-linux-musl
-			riscv64gc-unknown-linux-gnu
 			x86_64-apple-darwin
 			x86_64-pc-windows-gnu
 			x86_64-pc-windows-msvc
