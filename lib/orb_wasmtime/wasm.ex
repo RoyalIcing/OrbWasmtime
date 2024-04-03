@@ -169,7 +169,7 @@ defmodule OrbWasmtime.Wasm do
           case result do
             [] -> nil
             list when is_list(list) -> IO.iodata_to_binary(list)
-            other -> other
+            other -> Decode.process_term_result(other)
           end
         end
     end
@@ -440,7 +440,7 @@ defmodule OrbWasmtime.Wasm do
 
   def instance_cast_apply(instance, f, args) do
     f = to_string(f)
-    # args = Enum.map(args, &transform32/1)
+    args = Enum.map(args, &transform32/1)
     get_instance_handle(instance) |> Rust.wasm_instance_cast_func_i32(f, args)
   end
 

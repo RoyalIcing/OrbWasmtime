@@ -364,8 +364,12 @@ fn wasm_steps_internal(
     for step in steps {
         match step {
             WasmStepInstruction::Call(f, args) => {
-                let result = running_instance.call_i32(f, args)?;
-                results.push(map_return_values_i32(env, result));
+                let args = args
+                    .into_iter()
+                    .map(|t| WasmSupportedValue::U32(t))
+                    .collect();
+                let result = running_instance.call(f, args)?;
+                results.push(WasmSupportedValue::map_return_values(env, result));
             }
             WasmStepInstruction::CallString(f, args) => {
                 let string = running_instance.call_i32_string(f, args)?;
@@ -755,26 +759,6 @@ impl RunningInstance {
         return global.set(&mut self.store, Val::I32(new_value as i32));
     }
 
-    // TODO: remove
-    fn call_i32(&mut self, f: String, args: Vec<u32>) -> Result<Vec<u32>, anyhow::Error> {
-        let func = self
-            .instance
-            .get_func(&mut self.store, &f)
-            .expect(&format!("{} was not an exported function", f));
-
-        let func_type = func.ty(&self.store);
-        let args: Vec<Val> = args.into_iter().map(|i| Val::I32(i as i32)).collect();
-
-        let mut result: Vec<Val> = Vec::with_capacity(16);
-        let result_length = func_type.results().len();
-        result.resize(result_length, Val::I32(0));
-
-        func.call(&mut self.store, &args, &mut result)?;
-
-        let result: Vec<u32> = result.iter().map(|v| v.unwrap_i32() as u32).collect();
-        return Ok(result);
-    }
-
     fn call(
         &mut self,
         f: String,
@@ -979,7 +963,7 @@ fn wasm_instance_cast_func_i32(
     env: Env,
     resource: ResourceArc<RunningInstanceResource>,
     f: String,
-    args: Vec<u32>,
+    args: Vec<WasmSupportedValue>,
 ) -> Result<(), Error> {
     eprintln!("CAST! {f}");
     // let c_lock = Arc::clone(&resource.lock);
@@ -992,9 +976,7 @@ fn wasm_instance_cast_func_i32(
             .expect("Could not get a hold of resource.");
         eprintln!("Got instance");
         // let mut instance = c_lock.write().expect("Could not get a hold of resource.");
-        let result = instance
-            .call_i32(f, args)
-            .expect("WebAssembly call failed.");
+        let result = instance.call(f, args).expect("WebAssembly call failed.");
         eprintln!("CAST call done!");
         // return Ok(map_return_values_i32(env, result));
     });
