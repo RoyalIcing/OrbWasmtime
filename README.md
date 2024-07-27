@@ -50,5 +50,10 @@ be found at <https://hexdocs.pm/orb_wasmtime>.
 ## Releasing
 
 ```bash
+git tag v0.x.x
+git push --tags
+# Wait for GitHub Action to succeed
 mix rustler_precompiled.download OrbWasmtime.Rust --all --print --ignore-unavailable
+rm -rf native/orb_wasmtime/target/
+mix hex.publish
 ```
