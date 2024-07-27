@@ -63,11 +63,7 @@ defmodule OrbWasmtime.Wasm do
   end
 
   def list_exports(source) do
-    source =
-      case process_source(source) do
-        {:wat, _} = value -> value
-        other -> {:wat, other}
-      end
+    {_, source} = process_source2(source)
 
     Rust.wasm_list_exports(source)
   end
@@ -84,11 +80,7 @@ defmodule OrbWasmtime.Wasm do
   end
 
   def list_import_types(source) do
-    source =
-      case process_source(source) do
-        {:wat, _} = value -> value
-        other -> {:wat, other}
-      end
+    {_, source} = process_source2(source)
 
     case Rust.wasm_list_imports(source) do
       {:error, reason} -> raise reason
@@ -505,12 +497,16 @@ defmodule OrbWasmtime.Wasm do
     )
   end
 
+  defp process_source2(<<"\0asm", 0x01000000::32>> <> _rest = wasm),
+    do: {"unknown", {:wasm, wasm}}
+
   defp process_source2(string) when is_binary(string), do: {"unknown", {:wat, string}}
+
   defp process_source2({:wat, string} = value) when is_binary(string), do: {"unknown", value}
   defp process_source2(atom) when is_atom(atom), do: {to_string(atom), {:wat, atom.to_wat()}}
 
   defp process_source(source) do
-    {_identifier, {:wat, source}} = process_source2(source)
+    {_identifier, {_, source}} = process_source2(source)
     source
   end
 end
