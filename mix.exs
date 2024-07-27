@@ -34,7 +34,7 @@ defmodule OrbWasmtime.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.31.2", only: :docs, runtime: false},
-      {:rustler, "~> 0.33.0", optional: not @force_build?},
+      {:rustler, "~> 0.34.0", optional: not @force_build?},
       {:rustler_precompiled, "~> 0.7.2"},
       {:benchee, "~> 1.0", only: :dev}
       # {:dep_from_hexpm, "~> 0.3.0"},
